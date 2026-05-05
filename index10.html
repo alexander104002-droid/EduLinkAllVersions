@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Smaneka App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4A90E2',
+                        emerald: '#10b981',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-blue-50 text-gray-800 antialiased transition-colors duration-300 dark:bg-darkBg dark:text-gray-100 overflow-x-hidden m-0 p-0">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Data Dummy ---
+        const initialMenuItems = [
+            { id: 1, name: 'Nasi Goreng', price: 12000, category: 'Makanan', stand: 'Stand A' },
+            { id: 2, name: 'Mie Goreng', price: 10000, category: 'Makanan', stand: 'Stand A' },
+            { id: 3, name: 'Es Teh Manis', price: 4000, category: 'Minuman', stand: 'Stand B' },
+            { id: 4, name: 'Jus Jeruk', price: 8000, category: 'Minuman', stand: 'Stand B' },
+            { id: 5, name: 'Salad Buah', price: 15000, category: 'Sehat', stand: 'Stand C' },
+        ];
+
+        const initialTeachers = [
+            { id: 'guru_1', name: 'Bpk. Ahmad Fauzi', subject: 'Matematika', phone: '0812-3456-7890', email: 'ahmad@smaneka.sch.id', status: 'Available' },
+            { id: 'guru_2', name: 'Ibu Ratna Sari', subject: 'Bahasa Inggris', phone: '0812-9876-5432', email: 'ratna@smaneka.sch.id', status: 'Busy' },
+            { id: 'guru_3', name: 'Bpk. Budi Santoso', subject: 'Fisika', phone: '0812-5555-6666', email: 'budi@smaneka.sch.id', status: 'Available' },
+        ];
+
+        // --- Ikon SVG ---
+        const Icon = ({ name, className }) => {
+            const props = { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor", className: className || "w-6 h-6" };
+            switch (name) {
+                case 'Beranda': return <svg {...props}><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>;
+                case 'Absen': return <svg {...props}><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>;
+                case 'Kantin': return <svg {...props}><path d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" /></svg>;
+                case 'Kontak': return <svg {...props}><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>;
+                case 'Profil': return <svg {...props}><path d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+                case 'Settings': return <svg {...props}><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+                case 'Logout': return <svg {...props}><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>;
+                case 'Save': return <svg {...props}><path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0113.186 0z" /></svg>;
+                case 'Back': return <svg {...props}><path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>;
+                case 'User': return <svg {...props}><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>;
+                case 'Phone': return <svg {...props}><path d="M2.25 6.622c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0115.686 0c1.101.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 19.5V6.622zM15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+                case 'Mail': return <svg {...props}><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>;
+                default: return null;
+            }
+        };
+
+        // --- Halaman Login ---
+        const LoginView = ({ onLogin }) => {
+            const [u, setU] = useState('');
+            const [p, setP] = useState('');
+            const handle = (e) => {
+                e.preventDefault();
+                if (u === 'siswa' && p === '123') onLogin({ id: 'siswa_1', name: 'Siswa Kelas 11', role: 'Siswa' });
+                else if (u === 'guru' && p === '123') onLogin({ id: 'guru_1', name: 'Bpk. Ahmad Fauzi', role: 'Guru', subject: 'Matematika' });
+                else if (u === 'kantin' && p === '123') onLogin({ id: 'cs_1', name: 'CS Kantin Admin', role: 'CS Kantin' });
+                else alert('Gunakan: siswa, guru, atau kantin (Pass: 123)');
+            };
+            return (
+                <div className="min-h-screen w-full flex items-center justify-center bg-blue-50 dark:bg-darkBg p-6 animate-fade-in">
+                    <form onSubmit={handle} className="bg-white dark:bg-darkCard p-10 rounded-[2.5rem] shadow-2xl w-full max-w-sm border border-gray-100 dark:border-gray-800">
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl font-black text-primary mb-2 italic tracking-tighter uppercase">Smaneka</h1>
+                            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Portal Digital Sekolah</p>
+                        </div>
+                        <div className="space-y-4">
+                            <input type="text" placeholder="Username" className="w-full p-4 bg-gray-50 dark:bg-darkBg border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" value={u} onChange={e=>setU(e.target.value)} />
+                            <input type="password" placeholder="Password" className="w-full p-4 bg-gray-50 dark:bg-darkBg border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" value={p} onChange={e=>setP(e.target.value)} />
+                        </div>
+                        <button className="w-full bg-primary text-white py-4 rounded-2xl font-black mt-8 shadow-lg shadow-primary/30 active:scale-95 transition-all">Masuk</button>
+                    </form>
+                </div>
+            );
+        };
+
+        // --- Halaman Settings (Global) ---
+        const SettingsView = ({ onBack, isDark, setDark, onLogout }) => {
+            const [budget, setBudget] = useState('1000000');
+            return (
+                <div className="animate-fade-in min-h-screen w-full bg-blue-50 dark:bg-darkBg p-6">
+                    <div className="flex items-center gap-4 mb-10">
+                        <button onClick={onBack} className="p-3 bg-white dark:bg-darkCard shadow-sm rounded-2xl transition-colors"><Icon name="Back" /></button>
+                        <h2 className="text-2xl font-black italic uppercase">Settings</h2>
+                    </div>
+                    <section className="mb-10 bg-white dark:bg-darkCard p-6 rounded-[2rem] shadow-sm">
+                        <h3 className="text-emerald-500 font-black text-[10px] uppercase tracking-widest mb-4">Anggaran Kantin</h3>
+                        <input type="number" value={budget} onChange={e=>setBudget(e.target.value)} className="w-full bg-gray-50 dark:bg-darkBg p-4 rounded-2xl outline-none mb-3 font-mono" />
+                        <button className="w-full bg-orange-500 text-white p-4 rounded-2xl font-black flex items-center justify-center gap-2"> <Icon name="Save" className="w-5 h-5" /> Simpan </button>
+                    </section>
+                    <section className="mb-10 bg-white dark:bg-darkCard p-5 rounded-[2rem] flex justify-between items-center">
+                        <span className="font-bold">Mode Gelap</span>
+                        <button onClick={() => setDark(!isDark)} className={`w-14 h-8 rounded-full transition-all relative ${isDark ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${isDark ? 'left-7' : 'left-1'}`}></div>
+                        </button>
+                    </section>
+                    <button onClick={onLogout} className="w-full bg-white dark:bg-darkCard p-5 rounded-[2rem] font-black text-red-500 border border-red-50 shadow-sm flex items-center justify-center gap-2"> <Icon name="Logout" className="w-5 h-5" /> Keluar Akun </button>
+                </div>
+            );
+        };
+
+        // --- Halaman Profil (Khusus Guru/CS) ---
+        const ProfileEditView = ({ user, onUpdate }) => {
+            const [form, setForm] = useState({ 
+                name: user.name, 
+                phone: user.phone || '0812-0000-0000', 
+                email: user.email || 'user@smaneka.sch.id' 
+            });
+
+            const handleSave = (e) => {
+                e.preventDefault();
+                onUpdate(form);
+                alert('Profil berhasil diperbarui!');
+            };
+
+            return (
+                <div className="animate-fade-in w-full pb-32">
+                    <div className="bg-white dark:bg-darkCard p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 mb-8 text-center">
+                        <div className="w-20 h-20 bg-blue-50 dark:bg-darkBg rounded-[2rem] mx-auto mb-4 flex items-center justify-center text-primary border border-blue-100 dark:border-gray-800">
+                            <Icon name="User" className="w-10 h-10" />
+                        </div>
+                        <h2 className="text-2xl font-black tracking-tight">{user.role} Profile</h2>
+                        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{user.id}</p>
+                    </div>
+
+                    <form onSubmit={handleSave} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase text-gray-400 ml-4">Nama Lengkap</label>
+                            <div className="relative">
+                                <Icon name="User" className="absolute left-4 top-4 w-5 h-5 text-gray-300" />
+                                <input type="text" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} className="w-full pl-12 p-4 bg-white dark:bg-darkCard border-none rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-primary" required />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase text-gray-400 ml-4">Nomor Telepon</label>
+                            <div className="relative">
+                                <Icon name="Phone" className="absolute left-4 top-4 w-5 h-5 text-gray-300" />
+                                <input type="text" value={form.phone} onChange={e=>setForm({...form, phone: e.target.value})} className="w-full pl-12 p-4 bg-white dark:bg-darkCard border-none rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-primary" required />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase text-gray-400 ml-4">Email Instansi</label>
+                            <div className="relative">
+                                <Icon name="Mail" className="absolute left-4 top-4 w-5 h-5 text-gray-300" />
+                                <input type="email" value={form.email} onChange={e=>setForm({...form, email: e.target.value})} className="w-full pl-12 p-4 bg-white dark:bg-darkCard border-none rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-primary" required />
+                            </div>
+                        </div>
+
+                        <button className="w-full bg-emerald-500 text-white py-5 rounded-[2rem] font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                            <Icon name="Save" className="w-6 h-6" /> UPDATE PROFIL
+                        </button>
+                    </form>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [user, setUser] = useState(null);
+            const [activeTab, setActiveTab] = useState('Beranda');
+            const [isDark, setDark] = useState(false);
+            const [showSettings, setShowSettings] = useState(false);
+            const [teachers, setTeachers] = useState(initialTeachers);
+
+            useEffect(() => {
+                if (isDark) document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+            }, [isDark]);
+
+            if (!user) return <LoginView onLogin={setUser} />;
+
+            const handleUpdateProfile = (newData) => {
+                // Update sosi login user
+                setUser(prev => ({ ...prev, ...newData }));
+                // Jika Guru, update juga di list kontak
+                if (user.role === 'Guru') {
+                    setTeachers(prev => prev.map(t => t.id === user.id ? { ...t, ...newData } : t));
+                }
+            };
+
+            const renderContent = () => {
+                if (showSettings) return <SettingsView onBack={() => setShowSettings(false)} isDark={isDark} setDark={setDark} onLogout={() => {setUser(null); setShowSettings(false);}} />;
+                
+                switch (activeTab) {
+                    case 'Beranda': return (
+                        <div className="animate-fade-in w-full">
+                            <div className="bg-white dark:bg-darkCard p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 mb-6 text-center">
+                                <h2 className="text-3xl font-black mb-2 tracking-tighter uppercase italic">Halo, {user.name.split(' ')[0]}!</h2>
+                                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{user.role}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-emerald-500 p-6 rounded-[2rem] text-white"> <p className="text-[10px] font-bold uppercase opacity-80">Budget</p> <p className="text-xl font-black tracking-tighter italic">Rp 125rb</p> </div>
+                                <div className="bg-primary p-6 rounded-[2rem] text-white"> <p className="text-[10px] font-bold uppercase opacity-80">Poin</p> <p className="text-xl font-black tracking-tighter italic">450 Pts</p> </div>
+                            </div>
+                        </div>
+                    );
+                    case 'Kantin': return (
+                        <div className="grid grid-cols-1 gap-4 animate-fade-in mb-32 w-full">
+                            {initialMenuItems.map(item => (
+                                <div key={item.id} className="bg-white dark:bg-darkCard p-5 rounded-[2.2rem] shadow-sm flex justify-between items-center border border-gray-100 dark:border-gray-800">
+                                    <div className="pl-2"> <p className="font-black text-lg">{item.name}</p> <p className="text-emerald-500 font-bold text-sm">Rp {item.price.toLocaleString('id-ID')}</p> </div>
+                                    <button className="bg-primary text-white px-6 py-4 rounded-[1.5rem] font-black shadow-md active:scale-90 transition-all text-xs uppercase tracking-widest">Beli</button>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                    case 'Kontak': return (
+                        <div className="grid grid-cols-1 gap-4 animate-fade-in mb-32 w-full">
+                            {teachers.map(t => (
+                                <div key={t.id} className="bg-white dark:bg-darkCard p-5 rounded-[2.2rem] flex items-center gap-4 border border-gray-100 dark:border-gray-800 shadow-sm">
+                                    <div className="w-14 h-14 bg-blue-50 dark:bg-darkBg rounded-2xl flex items-center justify-center text-primary font-black text-xl">{t.name[5]}</div>
+                                    <div className="flex-1">
+                                        <p className="font-black text-sm tracking-tight">{t.name}</p>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">{t.subject}</p>
+                                        <p className="text-[11px] font-mono text-primary font-bold">{t.phone}</p>
+                                    </div>
+                                    <button className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 rounded-2xl"><Icon name="Chat" className="w-5 h-5" /></button>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                    case 'Profil': return <ProfileEditView user={user} onUpdate={handleUpdateProfile} />;
+                    case 'Absen': return (
+                        <div className="animate-fade-in flex flex-col gap-6 w-full h-full justify-center items-center py-20">
+                            <button className="w-56 h-56 bg-primary text-white rounded-[4rem] shadow-2xl flex flex-col items-center justify-center gap-4 active:scale-90 transition-all border-8 border-blue-100 dark:border-gray-800">
+                                <Icon name="Absen" className="w-20 h-20" /> <span className="font-black uppercase tracking-tighter text-xl italic italic italic">SCAN ABSEN</span>
+                            </button>
+                        </div>
+                    );
+                }
+            };
+
+            // Daftar Tab berdasarkan Peran
+            const tabs = user.role === 'Siswa' 
+                ? ['Beranda', 'Absen', 'Kantin', 'Kontak'] 
+                : ['Beranda', 'Kantin', 'Kontak', 'Profil'];
+
+            return (
+                <div className="w-screen min-h-screen bg-blue-50 dark:bg-darkBg transition-colors duration-300 relative flex flex-col">
+                    {!showSettings && (
+                        <header className="p-6 flex justify-between items-center sticky top-0 bg-blue-50/90 dark:bg-darkBg/90 backdrop-blur-2xl z-20">
+                            <h1 className="text-2xl font-black text-primary italic tracking-tighter uppercase">{activeTab}</h1>
+                            <button onClick={() => setShowSettings(true)} className="p-4 bg-white dark:bg-darkCard shadow-sm rounded-2xl text-gray-400 hover:text-primary active:scale-90"><Icon name="Settings" /></button>
+                        </header>
+                    )}
+
+                    <main className={`flex-1 w-full ${!showSettings ? "p-6" : ""}`}> {renderContent()} </main>
+
+                    {!showSettings && (
+                        <div className="fixed bottom-0 left-0 right-0 p-6 z-30 pointer-events-none">
+                            <nav className="max-w-full bg-white/70 dark:bg-darkCard/70 backdrop-blur-3xl border border-white/20 dark:border-gray-800 rounded-[2.8rem] flex justify-around p-3 shadow-2xl pointer-events-auto">
+                                {tabs.map((tab) => (
+                                    <button 
+                                        key={tab} 
+                                        onClick={() => setActiveTab(tab)} 
+                                        className={`flex flex-col items-center p-4 rounded-[1.8rem] transition-all duration-300 ${activeTab === tab ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-110 -translate-y-1' : 'text-gray-400 hover:text-gray-600'}`}
+                                    >
+                                        <Icon name={tab} className="w-6 h-6" />
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <style>
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+        body { overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</body>
+</html>

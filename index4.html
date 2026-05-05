@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Smaneka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4A90E2',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-blue-50 text-gray-800 antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- Data Dummy ---
+        const menuItems = [
+            { id: 1, name: 'Nasi Goreng', price: 12000, category: 'Makanan', stand: 'Stand A' },
+            { id: 2, name: 'Mie Goreng', price: 10000, category: 'Makanan', stand: 'Stand A' },
+            { id: 3, name: 'Es Teh Manis', price: 4000, category: 'Minuman', stand: 'Stand B' },
+            { id: 4, name: 'Jus Jeruk', price: 8000, category: 'Minuman', stand: 'Stand B' },
+            { id: 5, name: 'Salad Buah', price: 15000, category: 'Sehat', stand: 'Stand C' },
+        ];
+
+        const teachers = [
+            { id: 1, name: 'Bpk. Ahmad Fauzi', subject: 'Matematika', phone: '0812-3456-7890', status: 'Available' },
+            { id: 2, name: 'Ibu Ratna Sari', subject: 'Bahasa Inggris', phone: '0812-9876-5432', status: 'Busy' },
+            { id: 3, name: 'Bpk. Budi Santoso', subject: 'Fisika', phone: '0812-5555-6666', status: 'Available' },
+        ];
+
+        // --- Komponen Ikon SVG ---
+        const Icon = ({ name, className }) => {
+            const svgProps = {
+                xmlns: "http://www.w3.org/2000/svg",
+                fill: "none",
+                viewBox: "0 0 24 24",
+                strokeWidth: 1.5,
+                stroke: "currentColor",
+                className: className || "w-6 h-6"
+            };
+            switch (name) {
+                case 'Beranda': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>;
+                case 'Absen': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>;
+                case 'Kantin': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" /></svg>;
+                case 'Kontak': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>;
+                case 'Cart': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>;
+                case 'QR': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" /></svg>;
+                case 'Chat': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>;
+                case 'Logout': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>;
+                case 'Settings': return <svg {...svgProps}><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+                default: return null;
+            }
+        };
+
+        // --- Halaman Login ---
+        const LoginView = ({ onLogin }) => {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                setError('');
+                if (username === 'siswa' && password === '123') onLogin({ name: 'Siswa Kelas 11', role: 'Siswa' });
+                else if (username === 'guru' && password === '123') onLogin({ name: 'Bpk. Ahmad Fauzi', role: 'Guru' });
+                else if (username === 'kantin' && password === '123') onLogin({ name: 'Admin Kantin', role: 'CS Kantin' });
+                else setError('Username atau password salah.');
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col justify-center items-center p-4 animate-fade-in bg-blue-50">
+                    <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-primary mb-2">Smaneka App</h1>
+                            <p className="text-gray-500">Silakan masuk ke akun Anda</p>
+                        </div>
+                        {error && <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm text-center border border-red-200">{error}</div>}
+                        <form onSubmit={handleLogin} className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none focus:ring-2 focus:ring-primary" required />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none focus:ring-2 focus:ring-primary" required />
+                            </div>
+                            <button type="submit" className="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-md transition-colors hover:bg-blue-600">Masuk</button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Komponen Utama ---
+        const App = () => {
+            const [user, setUser] = useState(null);
+            const [activeTab, setActiveTab] = useState('Beranda');
+            const [cartCount, setCartCount] = useState(0);
+
+            if (!user) return <LoginView onLogin={setUser} />;
+
+            const renderContent = () => {
+                switch (activeTab) {
+                    case 'Beranda': return <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><h2 className="text-2xl font-bold mb-1">Selamat Pagi, {user.name}!</h2><p className="text-primary text-sm font-medium">Login sebagai: {user.role}</p></div>;
+                    case 'Absen': return <div className="animate-fade-in"><button className="w-full md:w-1/3 bg-primary text-white font-bold py-8 rounded-2xl shadow-md flex flex-col items-center gap-3"><Icon name="QR" className="w-12 h-12" />Scan QR Absen</button></div>;
+                    case 'Kantin': return <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{menuItems.map(item => <div key={item.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100"> <h4 className="font-bold">{item.name}</h4><p className="text-primary font-bold">Rp {item.price.toLocaleString('id-ID')}</p><button onClick={() => setCartCount(c => c+1)} className="mt-4 w-full bg-blue-50 text-primary py-2 rounded-xl border border-primary hover:bg-primary hover:text-white transition-all">+ Keranjang</button></div>)}</div>;
+                    case 'Kontak': return <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{teachers.map(t => <div key={t.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between"><div className="h-10 w-10 bg-gray-200 rounded-full"></div><div><h4 className="font-bold text-sm">{t.name}</h4><p className="text-xs text-gray-500">{t.subject}</p></div><button className="bg-green-50 text-green-600 p-2 rounded-lg"><Icon name="Chat" className="w-5 h-5" /></button></div>)}</div>;
+                }
+            };
+
+            return (
+                <div className="max-w-screen-xl mx-auto min-h-screen relative pb-20">
+                    <header className="bg-white p-4 shadow-sm sticky top-0 z-10 flex justify-between items-center">
+                        <h1 className="text-xl font-bold text-primary">{activeTab}</h1>
+                        <div className="flex items-center gap-2 md:gap-4">
+                            {activeTab === 'Kantin' && (
+                                <div className="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1.5">
+                                    <Icon name="Cart" className="w-4 h-4" />{cartCount}
+                                </div>
+                            )}
+                            {/* Ikon Settings Baru */}
+                            <button onClick={() => alert('Buka Pengaturan')} className="p-2 text-gray-400 hover:text-primary transition-colors hover:bg-blue-50 rounded-full" title="Pengaturan">
+                                <Icon name="Settings" className="w-6 h-6" />
+                            </button>
+                            <button onClick={() => setUser(null)} className="p-2 text-gray-400 hover:text-red-500 transition-colors hover:bg-red-50 rounded-full" title="Keluar">
+                                <Icon name="Logout" className="w-6 h-6" />
+                            </button>
+                        </div>
+                    </header>
+                    <main className="p-4">{renderContent()}</main>
+                    <nav className="fixed bottom-0 w-full max-w-screen-xl mx-auto bg-white border-t flex justify-around p-3 z-20">
+                        {['Beranda', 'Absen', 'Kantin', 'Kontak'].map((tab) => (
+                            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex flex-col items-center p-2 rounded-lg ${activeTab === tab ? 'text-primary' : 'text-gray-400'}`}>
+                                <Icon name={tab} className="w-6 h-6 mb-1" />
+                                <span className="text-xs font-medium">{tab}</span>
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <style>.animate-fade-in { animation: fadeIn 0.3s ease-in-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }</style>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Smaneka App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4A90E2',
+                        emerald: '#10b981',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-blue-50 text-gray-800 antialiased transition-colors duration-300 dark:bg-darkBg dark:text-gray-100 overflow-x-hidden m-0 p-0">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Data Dummy ---
+        const menuItems = [
+            { id: 1, name: 'Nasi Goreng', price: 12000, category: 'Makanan', stand: 'Stand A' },
+            { id: 2, name: 'Mie Goreng', price: 10000, category: 'Makanan', stand: 'Stand A' },
+            { id: 3, name: 'Es Teh Manis', price: 4000, category: 'Minuman', stand: 'Stand B' },
+            { id: 4, name: 'Jus Jeruk', price: 8000, category: 'Minuman', stand: 'Stand B' },
+            { id: 5, name: 'Salad Buah', price: 15000, category: 'Sehat', stand: 'Stand C' },
+        ];
+
+        const teachers = [
+            { id: 1, name: 'Bpk. Ahmad Fauzi', subject: 'Matematika', status: 'Available' },
+            { id: 2, name: 'Ibu Ratna Sari', subject: 'Bahasa Inggris', status: 'Busy' },
+            { id: 3, name: 'Bpk. Budi Santoso', subject: 'Fisika', status: 'Available' },
+        ];
+
+        // --- Ikon SVG ---
+        const Icon = ({ name, className }) => {
+            const props = { xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor", className: className || "w-6 h-6" };
+            switch (name) {
+                case 'Beranda': return <svg {...props}><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>;
+                case 'Absen': return <svg {...props}><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>;
+                case 'Kantin': return <svg {...props}><path d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" /></svg>;
+                case 'Kontak': return <svg {...props}><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>;
+                case 'Settings': return <svg {...props}><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+                case 'Logout': return <svg {...props}><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>;
+                case 'Save': return <svg {...props}><path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0113.186 0z" /></svg>;
+                case 'Fingerprint': return <svg {...props}><path d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.262m-7.381-2.044a3.75 3.75 0 011.531-1.127m-2.329 4.179a3.75 3.75 0 01-.659-1.811M10.5 21h3m-6.75-6a6.75 6.75 0 1113.5 0c0 1.22-.26 2.383-.727 3.437" /></svg>;
+                case 'Lock': return <svg {...props}><path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>;
+                case 'Moon': return <svg {...props}><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>;
+                case 'Back': return <svg {...props}><path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>;
+                case 'Trash': return <svg {...props}><path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>;
+                case 'Chat': return <svg {...props}><path d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>;
+                default: return null;
+            }
+        };
+
+        // --- Halaman Login ---
+        const LoginView = ({ onLogin }) => {
+            const [u, setU] = useState('');
+            const [p, setP] = useState('');
+            const [error, setError] = useState('');
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                setError('');
+                if (u === 'siswa' && p === '123') {
+                    onLogin({ name: 'Siswa Kelas 11', role: 'Siswa' });
+                } else if (u === 'guru' && p === '123') {
+                    onLogin({ name: 'Bpk. Ahmad Fauzi', role: 'Guru' });
+                } else if (u === 'kantin' && p === '123') {
+                    onLogin({ name: 'CS Kantin Admin', role: 'CS Kantin' });
+                } else {
+                    setError('Data login salah.');
+                }
+            };
+
+            return (
+                <div className="min-h-screen w-full flex items-center justify-center bg-blue-50 dark:bg-darkBg p-6 animate-fade-in">
+                    <form onSubmit={handleLogin} className="bg-white dark:bg-darkCard p-10 rounded-[2.5rem] shadow-2xl w-full max-w-sm border border-gray-100 dark:border-gray-800">
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl font-black text-primary mb-2 italic">Smaneka</h1>
+                            <p className="text-gray-400 text-sm font-medium">Portal Digital Sekolah</p>
+                        </div>
+
+                        {error && <div className="mb-4 text-xs bg-red-50 text-red-500 p-3 rounded-xl text-center border border-red-100 font-bold">{error}</div>}
+
+                        <div className="space-y-4">
+                            <input type="text" placeholder="Username" className="w-full p-4 bg-gray-50 dark:bg-darkBg border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" onChange={e=>setU(e.target.value)} />
+                            <input type="password" placeholder="Password" className="w-full p-4 bg-gray-50 dark:bg-darkBg border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" onChange={e=>setP(e.target.value)} />
+                        </div>
+                        <button className="w-full bg-primary text-white py-4 rounded-2xl font-bold mt-8 shadow-lg shadow-primary/30 active:scale-95 transition-all">Masuk Akun</button>
+                        
+                        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase mb-3 text-center tracking-widest">Sampel Akun (Pass: 123)</p>
+                            <div className="flex justify-between gap-2">
+                                {['siswa', 'guru', 'kantin'].map(acc => (
+                                    <button key={acc} type="button" onClick={() => setU(acc)} className="flex-1 bg-gray-50 dark:bg-darkBg py-2 rounded-lg text-[10px] font-black text-gray-500 hover:text-primary transition-colors border border-transparent hover:border-primary uppercase">{acc}</button>
+                                ))}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            );
+        };
+
+        // --- Halaman Settings ---
+        const SettingsView = ({ onBack, isDark, setDark, onLogout }) => {
+            const [budget, setBudget] = useState('1000000');
+            const [finger, setFinger] = useState(false);
+
+            return (
+                <div className="animate-fade-in min-h-screen w-full bg-blue-50 dark:bg-darkBg p-6">
+                    <div className="flex items-center gap-4 mb-10">
+                        <button onClick={onBack} className="p-3 bg-white dark:bg-darkCard shadow-sm rounded-2xl transition-colors">
+                            <Icon name="Back" className="w-6 h-6" />
+                        </button>
+                        <h2 className="text-2xl font-black">Pengaturan</h2>
+                    </div>
+
+                    <section className="mb-10">
+                        <h3 className="text-emerald-500 font-black text-xs tracking-widest uppercase mb-4 ml-2">Anggaran Bulanan</h3>
+                        <div className="bg-white dark:bg-darkCard p-6 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800">
+                            <label className="text-xs text-gray-400 mb-2 block font-bold uppercase">Batas Maksimal Pengeluaran</label>
+                            <div className="flex flex-col gap-3">
+                                <input 
+                                    type="number" 
+                                    value={budget} 
+                                    onChange={(e) => setBudget(e.target.value)}
+                                    className="w-full bg-gray-50 dark:bg-darkBg border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-mono text-lg transition-all"
+                                />
+                                <button className="w-full bg-orange-500 text-white p-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 active:scale-95 transition-all">
+                                    <Icon name="Save" className="w-5 h-5" /> Simpan Anggaran
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-gray-400 mt-4 leading-relaxed italic">Aplikasi akan memberi peringatan jika pengeluaran melebihi batas.</p>
+                        </div>
+                    </section>
+
+                    <section className="mb-10">
+                        <h3 className="text-emerald-500 font-black text-xs tracking-widest uppercase mb-4 ml-2">Tampilan</h3>
+                        <div className="bg-white dark:bg-darkCard p-5 rounded-[2rem] shadow-sm flex items-center justify-between border border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 dark:bg-darkBg rounded-xl"><Icon name="Moon" className="w-5 h-5 text-primary" /></div>
+                                <span className="font-bold">Mode Gelap</span>
+                            </div>
+                            <button onClick={() => setDark(!isDark)} className={`w-14 h-8 rounded-full transition-all relative ${isDark ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                                <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${isDark ? 'left-7' : 'left-1'}`}></div>
+                            </button>
+                        </div>
+                    </section>
+
+                    <section className="mb-20">
+                        <h3 className="text-emerald-500 font-black text-xs tracking-widest uppercase mb-4 ml-2">Keamanan & Akun</h3>
+                        <div className="bg-white dark:bg-darkCard rounded-[2rem] shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
+                            <button className="w-full p-5 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all border-b dark:border-gray-800">
+                                <Icon name="Lock" className="w-5 h-5 text-gray-400" /><span className="font-bold">Ubah PIN Keamanan</span>
+                            </button>
+                            <div className="p-5 flex items-center justify-between border-b dark:border-gray-800">
+                                <div className="flex items-center gap-4 font-bold">
+                                    <Icon name="Fingerprint" className="w-5 h-5 text-gray-400" /> Sidik Jari
+                                </div>
+                                <button onClick={() => setFinger(!finger)} className={`w-14 h-8 rounded-full transition-all relative ${finger ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                                    <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${finger ? 'left-7' : 'left-1'}`}></div>
+                                </button>
+                            </div>
+                            <button 
+                                onClick={onLogout}
+                                className="w-full p-5 flex items-center gap-4 text-orange-500 font-black hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all active:scale-95"
+                            >
+                                <Icon name="Trash" className="w-5 h-5" /> Keluar & Hapus Data
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [user, setUser] = useState(null);
+            const [activeTab, setActiveTab] = useState('Beranda');
+            const [isDark, setDark] = useState(false);
+            const [showSettings, setShowSettings] = useState(false);
+
+            useEffect(() => {
+                if (isDark) document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+            }, [isDark]);
+
+            if (!user) return <LoginView onLogin={setUser} />;
+
+            const handleLogout = () => {
+                setUser(null);
+                setShowSettings(false);
+                setActiveTab('Beranda');
+            };
+
+            const renderContent = () => {
+                if (showSettings) return <SettingsView onBack={() => setShowSettings(false)} isDark={isDark} setDark={setDark} onLogout={handleLogout} />;
+                
+                switch (activeTab) {
+                    case 'Beranda': return (
+                        <div className="animate-fade-in w-full">
+                            <div className="bg-white dark:bg-darkCard p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
+                                <h2 className="text-3xl font-black mb-2 tracking-tight">Halo, {user.name.split(' ')[0]}!</h2>
+                                <p className="text-gray-500 dark:text-gray-400 font-medium">Masuk sebagai {user.role}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-emerald-500 p-6 rounded-[2rem] text-white shadow-lg shadow-emerald-500/20">
+                                    <p className="text-xs font-bold uppercase opacity-80 mb-1">Anggaran</p>
+                                    <p className="text-xl font-black">Rp 125rb</p>
+                                </div>
+                                <div className="bg-primary p-6 rounded-[2rem] text-white shadow-lg shadow-primary/20">
+                                    <p className="text-xs font-bold uppercase opacity-80 mb-1">Poin Aktif</p>
+                                    <p className="text-xl font-black">450 Pts</p>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                    case 'Kantin': return (
+                        <div className="grid grid-cols-1 gap-4 animate-fade-in mb-32 w-full">
+                            {menuItems.map(item => (
+                                <div key={item.id} className="bg-white dark:bg-darkCard p-5 rounded-[2.2rem] shadow-sm flex justify-between items-center border border-gray-100 dark:border-gray-800">
+                                    <div className="pl-2">
+                                        <p className="font-black text-lg leading-tight">{item.name}</p>
+                                        <p className="text-emerald-500 font-bold text-sm">Rp {item.price.toLocaleString('id-ID')}</p>
+                                    </div>
+                                    <button className="bg-primary text-white px-6 py-4 rounded-[1.5rem] font-black shadow-md active:scale-90 transition-all text-sm uppercase tracking-widest">Beli</button>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                    case 'Absen': return (
+                        <div className="animate-fade-in flex flex-col gap-6 w-full h-full justify-center items-center py-20">
+                            <button className="w-56 h-56 bg-primary text-white rounded-[4rem] shadow-2xl flex flex-col items-center justify-center gap-4 active:scale-90 transition-all border-8 border-blue-100 dark:border-gray-800">
+                                <Icon name="QR" className="w-20 h-20" />
+                                <span className="font-black uppercase tracking-tighter text-xl italic text-center">SCAN ABSEN</span>
+                            </button>
+                        </div>
+                    );
+                    case 'Kontak': return (
+                        <div className="grid grid-cols-1 gap-4 animate-fade-in mb-32 w-full">
+                            {teachers.map(t => (
+                                <div key={t.id} className="bg-white dark:bg-darkCard p-4 rounded-[2rem] flex items-center gap-4 border border-gray-100 dark:border-gray-800">
+                                    <div className="w-14 h-14 bg-gray-100 dark:bg-darkBg rounded-2xl flex items-center justify-center text-primary font-black">{t.name[5]}</div>
+                                    <div className="flex-1">
+                                        <p className="font-black text-sm">{t.name}</p>
+                                        <p className="text-xs text-gray-400 font-bold">{t.subject}</p>
+                                    </div>
+                                    <button className="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 rounded-xl"><Icon name="Chat" className="w-5 h-5" /></button>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                    default: return <div className="text-center text-gray-400 mt-40 font-bold italic w-full">Segera hadir...</div>;
+                }
+            };
+
+            return (
+                <div className="w-screen min-h-screen bg-blue-50 dark:bg-darkBg transition-colors duration-300 relative flex flex-col">
+                    {!showSettings && (
+                        <header className="p-6 flex justify-between items-center sticky top-0 bg-blue-50/90 dark:bg-darkBg/90 backdrop-blur-2xl z-20">
+                            <h1 className="text-2xl font-black text-primary italic tracking-tighter uppercase">{activeTab}</h1>
+                            <button onClick={() => setShowSettings(true)} className="p-4 bg-white dark:bg-darkCard shadow-sm rounded-2xl text-gray-400 hover:text-primary transition-all active:scale-90">
+                                <Icon name="Settings" />
+                            </button>
+                        </header>
+                    )}
+
+                    <main className={`flex-1 w-full ${!showSettings ? "p-6" : ""}`}>
+                        {renderContent()}
+                    </main>
+
+                    {!showSettings && (
+                        <div className="fixed bottom-0 left-0 right-0 p-6 z-30 pointer-events-none">
+                            <nav className="max-w-full bg-white/70 dark:bg-darkCard/70 backdrop-blur-3xl border border-white/20 dark:border-gray-800 rounded-[2.8rem] flex justify-around p-3 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] pointer-events-auto">
+                                {['Beranda', 'Absen', 'Kantin', 'Kontak'].map((tab) => (
+                                    <button 
+                                        key={tab} 
+                                        onClick={() => setActiveTab(tab)} 
+                                        className={`flex flex-col items-center p-4 rounded-[1.8rem] transition-all duration-300 ${activeTab === tab ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-110 -translate-y-1' : 'text-gray-400 hover:text-gray-600'}`}
+                                    >
+                                        <Icon name={tab} className="w-6 h-6" />
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <style>
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
+        body { overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</body>
+</html>
